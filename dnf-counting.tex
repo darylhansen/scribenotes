@@ -1,1 +1,18 @@
 \section{DNF Counting}
+Given a DNF formula $\varphi$ with $n$ variables, DNF counting is the problem finding the number of satisfying assignments for $\varphi$. Note that in general satisfiability for DNF is easy as we need only satisfy a single clause, but the counting problem is hard. Indeed, if we could do this, then given any 3-CNF formula $f$ with $n$ formulas, we could take its negation, count how many satisfying assignments its negation has, and if that was equal to $2^n$ then $\neg f$ is a tautology so $f$ is unsatisfiable, otherwise, it is satisfiable, so we have solved 3-SAT. The counting problem is hard for a class called $\# P$, which is a very strong form of intractability. We seek to find approximate solutions to this problem.
+
+The obvious approach is the following: sample random assignments uniformly at random, and take the estimate to be $p 2^n$ where $p$ was the fraction of assignments that satisfied $\varphi$. Let $X_i$ be the random variable which is $1$ if the $i$th assignment we chose satisfied $F$, zero otherwise, and suppose we sample $m$ times. Then $p = \frac{1}{m} \sum_{i = 1}^m X_i$. Let $\mu$ be true fraction of satisfying assignments. Then for fixed $\epsilon, \delta > 0$ if we want
+\[\Pr (|X - \mu| \geq \epsilon \mu) \leq \delta\]
+then using only Chernoff bounds we would need $m = \Omega (1 / \mu)$. However, in general, $\mu$ can be exponentially small: for instance, if there is only one satisfying assignment then $\mu = 2^{-n}$, so the obvious approach may take exponential time to get nice probabilistic guarantees.
+
+Instead, we will do the following. Write
+\[\phi = C_1 \vee C_2 \vee \ldots C_t\]
+and let $SC_i$ be the set of assignments that satisfy clause $i$. We wish to approximate $S = |\cup_i SC_i|$. We do so as follows: let
+\[U = \{(i, x): 1 \leq i \leq t, x \in SC_i\}.\]
+It is easy to count $|SC_i|$, as if $C_i$ contains $i$ variables then $|SC_i| = 2^{n - i}$. As $|U| = \sum_{i = 1}^t |SC_i|$, it is easy to count $|U|$, so to approximate $S$ we need only to find out approximately how much we repeat ourselves in $U$. More rigorously, let
+\[X = \{(i, x): 1 \leq i \leq t, x \in SC_i, x \not\in SC_j, j \leq i - 1\}.\]
+Then clearly $|X| = S$, and we will estimate $|X|$ be approximating $|X| / |U|$. To do this, we will sample elements $(i, x)$ from $U$ uniformly at random and determine if $(i, x) \in X$. Given a random sample $(i, x) \in U$, it is not hard to check if $(i, x) \in X$: simply check whether or not $x$ satisfies $C_j$ for some $j < i$, which take polynomial time. Importantly, we claim that $|X| / |U| \geq 1 / t$, as trivially, every satisfying assignment must satisfy some clause, so when we do the same Chernoff bound analysis as before, to get an $(\epsilon, \delta)$ approximation it will suffice to take $3 t \log (2 / \delta) / \epsilon^2$ samples, so assuming we can sample from $U$, this whole procedure will take polynomial time.
+
+Thus it suffices to pick samples uniformly at random from $U$. To do so, for each $1 \leq i \leq t$ we pick $i$ with probability $\frac{|SC_i|}{|U|}$, then we randomly pick an element $x$ of $|SC_i|$. The latter is easy to do because it amounts to flipping $n - j$ coins, where $j$ is the number of variables present in $C_i$. Then 
+\[\Pr ((i, x) \mbox{ is selected}) = \frac{|SC_i|}{U} \frac{1}{|SC_i|} = \frac{1}{U}\]
+so we have found a way to sample uniformly form $U$, so we are done.
