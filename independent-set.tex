@@ -38,14 +38,16 @@ Our estimate of $|\Omega(G)|$ is equal to
 while the truth value is
 \[ 2^n \prod_{i=1}^m r_i \]
 
-We claim that
+\begin{claim}
 \[ \Pr\left(|\prod_{i=1}^m \frac{\tilde r_i}{r_i} - 1| \leq \epsilon\right) \geq 1 - \delta \]
+\end{claim}
 
-Proof:
+\begin{proof}
 \[Pr\left( |\tilde r_i - r_i | \leq \frac{\epsilon}{2m}r_i\right) \geq 1 - \frac{\delta}{m}\]
 \[Pr\left( r_i(1-\frac{\epsilon}{2m}) \leq \tilde r_i \leq r_i(1+\frac{\epsilon}{2m})\right) \geq 1 - \frac{\delta}{m} \]
 \[Pr\left(1 - \frac{\epsilon}{2m} \leq \frac{\tilde r_i}{r_i} \leq 1 + \frac{\epsilon}{2m}\right) \geq 1 - \frac{\delta}{m} \]
 \[Pr\left(1 - \epsilon \leq (1 - \frac{\epsilon}{2m})^m \leq \prod_{i=1}^m \frac{\tilde r_i}{r_i} \leq (1 + \frac{\epsilon}{2m})^m \leq 1 + \epsilon\right) \geq 1 - \delta \]
+\end{proof}
 
 To estimate $|\Omega(G)|$, all that remains is to figure out how to generate a uniform sample from $\Omega(G_{i-1}) \forall i$.
 Additionally, an \emph{almost} uniform sample suffices -- the extra error can be carried through the previous $\epsilon/\delta$ proof.
