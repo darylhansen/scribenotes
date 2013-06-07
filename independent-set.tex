@@ -1,1 +1,61 @@
-\section{Independent Set}
+
+\section{Independent Sets Illustration}
+
+Suppose we have a graph $G = (V,E)$. Order its edges arbitrarily, and label them $E = \{e_1, \ldots, e_m\}$. \\
+Define a sequence of graphs $G_i = (V, E_i)$ where $E_i = \{ e_j | j \leq i \}$. \\
+Notice that $G_0 = (V, \phi)$ and $G_m = G$. \\
+Next, define $\Omega(G_i)$ to be the set of Independent Sets in $G_i$.
+\[ |\Omega(G)| = \frac{|\Omega(G_m)|}{|\Omega(G_{m-1})|} \times \frac{|\Omega(G_{m-1})|}{|\Omega(G_{m-2})|} \times \ldots \times \frac{|\Omega(G_1)|}{|\Omega(G_{0})|} \times |\Omega(G_0)| \]
+
+To estimate $|\Omega(G)|$, we just need to have a good estimate for
+\[ r_i = \frac{|\Omega(G_i)|}{|\Omega(G_{i-1})|} \]
+
+As an aside, we know that $r_i \geq \frac{3}{4}$, because of the following argument:
+\begin{itemize}
+\item Let edge $e_i = (u,v)$.
+\item The only way we lost an I.S. $I$ from $G_{i-1}$ to $G_i$ is if both $u$ aand $v$ are in $I$.
+\item If $I \in \Omega(G_{i-1})$, then so are $I \setminus \{u\}$, $I \setminus \{v\}$, and $I \setminus \{u, v\}$. All three of these are also members of $\Omega(G_i)$.
+\item So for any I.S. lost, there are at least three others that remain, and $r_i \geq \frac{3}{4}$.
+\end{itemize}
+
+Now we present an algorithm for estimating $r_i$, given that we have an algorithm for generating random samples (which will be presented later):
+
+\begin{enumerate}
+\item $X = 0$
+%\item Repeat M times (for M = \frac{3}{(\frac{\epsilon}{2m})^2} \ln(\frac{2}{\frac
+\item Repeat $M$ times: \emph{(for $M = \frac{3m^2}{\epsilon^2} \ln(\frac{2m}{\delta})$})
+\begin{itemize}
+\item generate uniform sample from $\Omega(G_{i-1})$
+\item if sample is an independent set in $G_i$, increment $X$.
+\end{itemize}
+\item return $\tilde r_i = \frac{X}{M}$.
+\end{enumerate}
+
+Using DNF counting, $\tilde r_i$ is a $(\frac{\epsilon}{2m}, \frac{\delta}{m})$ approximation of $r_i$.
+
+Our estimate of $|\Omega(G)|$ is equal to
+\[ 2^n \prod_{i=1}^m \tilde r_i \]
+while the truth value is
+\[ 2^n \prod_{i=1}^m r_i \]
+
+We claim that
+\[ \Pr\left(|\prod_{i=1}^m \frac{\tilde r_i}{r_i} - 1| \leq \epsilon\right) \geq 1 - \delta \]
+
+Proof:
+\[Pr\left( |\tilde r_i - r_i | \leq \frac{\epsilon}{2m}r_i\right) \geq 1 - \frac{\delta}{m}\]
+\[Pr\left( r_i(1-\frac{\epsilon}{2m}) \leq \tilde r_i \leq r_i(1+\frac{\epsilon}{2m})\right) \geq 1 - \frac{\delta}{m} \]
+\[Pr\left(1 - \frac{\epsilon}{2m} \leq \frac{\tilde r_i}{r_i} \leq 1 + \frac{\epsilon}{2m}\right) \geq 1 - \frac{\delta}{m} \]
+\[Pr\left(1 - \epsilon \leq (1 - \frac{\epsilon}{2m})^m \leq \prod_{i=1}^m \frac{\tilde r_i}{r_i} \leq (1 + \frac{\epsilon}{2m})^m \leq 1 + \epsilon\right) \geq 1 - \delta \]
+
+To estimate $|\Omega(G)|$, all that remains is to figure out how to generate a uniform sample from $\Omega(G_{i-1}) \forall i$.
+Additionally, an \emph{almost} uniform sample suffices -- the extra error can be carried through the previous $\epsilon/\delta$ proof.
+
+\subsection{Sampling}
+The current goal is to sample elements from a universe $\Omega$ according to some distribution $\Pi$.
+  One cool way to do so is to design a Markov Chain whose state space is $\Omega$ that has stationary distribution $\Pi$. Then, we can simulate this Markov chain until it "mixes", and use the state at that time as a sample. Notice that in the Independent Set case, the Markov chain has $|\Omega|$ states, which is exponential in $|G|$, so we need a chain with a logarithmic mixing time (e.g. an expander graph).
+
+The two key questions related to this are:
+\begin{enumerate}
+\item How do we design a chain with the right distribution?
+\item How do we bound the mixing time?
+\end{enumerate}
