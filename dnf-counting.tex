@@ -3,7 +3,7 @@ Given a DNF formula $\varphi$ with $n$ variables, DNF counting is the problem fi
 
 The obvious approach is the following: sample random assignments uniformly at random, and take the estimate to be $p 2^n$ where $p$ was the fraction of assignments that satisfied $\varphi$. Let $X_i$ be the random variable which is $1$ if the $i$th assignment we chose satisfied $F$, zero otherwise, and suppose we sample $m$ times. Then $p = \frac{1}{m} \sum_{i = 1}^m X_i$. Let $\mu$ be true fraction of satisfying assignments. Then for fixed $\epsilon, \delta > 0$ if we want
 \[\Pr (|X - \mu| \geq \epsilon \mu) \leq \delta\]
-then using only Chernoff bounds we would need $m = \Omega (1 / \mu)$. However, in general, $\mu$ can be exponentially small: for instance, if there is only one satisfying assignment then $\mu = 2^{-n}$, so the obvious approach may take exponential time to get nice probabilistic guarantees.
+then using only Chernoff bounds as above would require $m = \Omega (1 / \mu)$. However, in general, $\mu$ can be exponentially small: for instance, if there is only one satisfying assignment then $\mu = 2^{-n}$, so the obvious approach may take exponential time to get nice probabilistic guarantees.
 
 Instead, we will do the following. Write
 \[\phi = C_1 \vee C_2 \vee \ldots C_t\]

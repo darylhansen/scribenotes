@@ -1,5 +1,5 @@
 
-\section{Independent Sets Illustration}
+\section{Independent Sets}
 
 Suppose we have a graph $G = (V,E)$. Order its edges arbitrarily, and label them $E = \{e_1, \ldots, e_m\}$. \\
 Define a sequence of graphs $G_i = (V, E_i)$ where $E_i = \{ e_j | j \leq i \}$. \\
@@ -10,13 +10,12 @@ Next, define $\Omega(G_i)$ to be the set of Independent Sets in $G_i$.
 To estimate $|\Omega(G)|$, we just need to have a good estimate for
 \[ r_i = \frac{|\Omega(G_i)|}{|\Omega(G_{i-1})|} \]
 
-As an aside, we know that $r_i \geq \frac{3}{4}$, because of the following argument:
-\begin{itemize}
-\item Let edge $e_i = (u,v)$.
-\item The only way we lost an I.S. $I$ from $G_{i-1}$ to $G_i$ is if both $u$ aand $v$ are in $I$.
-\item If $I \in \Omega(G_{i-1})$, then so are $I \setminus \{u\}$, $I \setminus \{v\}$, and $I \setminus \{u, v\}$. All three of these are also members of $\Omega(G_i)$.
-\item So for any I.S. lost, there are at least three others that remain, and $r_i \geq \frac{3}{4}$.
-\end{itemize}
+\begin{lemma}
+For all $i, r_i \geq \frac{3}{4}$.
+\end{lemma}
+\begin{proof}
+Write $e_i = (u,v)$. Then the only way we lost an I.S. $I$ from $G_{i-1}$ to $G_i$ is if both $u$ aand $v$ are in $I$. However, if $I \in \Omega(G_{i-1})$, then so are $I \setminus \{u\}$, $I \setminus \{v\}$, and $I \setminus \{u, v\}$. All three of these are also members of $\Omega(G_i)$, so for any I.S. lost, there are at least three others that remain, and so $r_i \geq \frac{3}{4}$.
+\end{proof}
 
 Now we present an algorithm for estimating $r_i$, given that we have an algorithm for generating random samples (which will be presented later):
 
@@ -31,22 +30,28 @@ Now we present an algorithm for estimating $r_i$, given that we have an algorith
 \item return $\tilde r_i = \frac{X}{M}$.
 \end{enumerate}
 
-Using DNF counting, $\tilde r_i$ is a $(\frac{\epsilon}{2m}, \frac{\delta}{m})$ approximation of $r_i$.
+By the Chernoff bound discussed previously, since $r_i$ is large, $\tilde r_i$ is a $(\frac{\epsilon}{2m}, \frac{\delta}{m})$ approximation of $r_i$.
 
 Our estimate of $|\Omega(G)|$ is equal to
 \[ 2^n \prod_{i=1}^m \tilde r_i \]
-while the truth value is
-\[ 2^n \prod_{i=1}^m r_i \]
+while the true value is
+\[ 2^n \prod_{i=1}^m r_i.\]
+We claim the two are close, with high probability.
 
 \begin{claim}
 \[ \Pr\left(|\prod_{i=1}^m \frac{\tilde r_i}{r_i} - 1| \leq \epsilon\right) \geq 1 - \delta \]
 \end{claim}
 
 \begin{proof}
+For each individual $i$, we have
 \[Pr\left( |\tilde r_i - r_i | \leq \frac{\epsilon}{2m}r_i\right) \geq 1 - \frac{\delta}{m}\]
+or equivalently,
 \[Pr\left( r_i(1-\frac{\epsilon}{2m}) \leq \tilde r_i \leq r_i(1+\frac{\epsilon}{2m})\right) \geq 1 - \frac{\delta}{m} \]
+or
 \[Pr\left(1 - \frac{\epsilon}{2m} \leq \frac{\tilde r_i}{r_i} \leq 1 + \frac{\epsilon}{2m}\right) \geq 1 - \frac{\delta}{m} \]
+so by the union bound,
 \[Pr\left(1 - \epsilon \leq (1 - \frac{\epsilon}{2m})^m \leq \prod_{i=1}^m \frac{\tilde r_i}{r_i} \leq (1 + \frac{\epsilon}{2m})^m \leq 1 + \epsilon\right) \geq 1 - \delta \]
+and we are done.
 \end{proof}
 
 To estimate $|\Omega(G)|$, all that remains is to figure out how to generate a uniform sample from $\Omega(G_{i-1}) \forall i$.
@@ -90,15 +95,15 @@ $P_{xy} = \begin{cases}
 \end{cases}$
 One nice property is that defining $P$ only depends on the ratios of $\pi$, not on $\pi_x$ or $\pi_y$ in isolation. In some circumstances, $\pi$ is only known up to proportionality, and it's not easy to get the normalizing factor, but that does not affect this algorithm.
 \begin{claim}
-$ \pi_x P_{xy} = \pi_y P_{yx} \forall x, y$
+For all $x, y, \pi_x P_{xy} = \pi_y P_{yx}.$
   \end{claim}
 \begin{proof}
-If $x \neq y$, assume without loss of generality that $\pi_x \leq \pi_y$. \\
-  Then $\pi_x(\frac{1}{2\Delta}) = \pi_y(\frac{1}{2\Delta}\frac{\pi_x}{\pi_y})$.
+If $x \neq y$, assume without loss of generality that $\pi_x \leq \pi_y$. Then $\pi_x(\frac{1}{2\Delta}) = \pi_y(\frac{1}{2\Delta}\frac{\pi_x}{\pi_y})$. by explicit calculation.
 \end{proof} \\
 This claim implies that $\pi$ is a stationary distribution for our Markov chain.
 \bigskip
 
 As an example, suppose we wanted to sample the independent sets according to the distribution $\pi(I) = \frac{\lambda^{|I|}}{Z}$, where $Z = \sum_{I'} \lambda^{|I'|}$. \\ 
 Then by the algorithm above, the probability matrix is defined as
-\[ P_{I, I'} = \frac{1}{2n}\min(1, \lambda) \]
+\[ P_{I, I'} = \frac{1}{2n}\min(1, \lambda).\]
+We now wish to show that the metropolis algorithm can be run in polynomial time; that is, we only need to run the simulation for polynomially many steps before we get $\epsilon$-close to the stationary distribution. We do so in the next lecture, using the techniques we develop below.

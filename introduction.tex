@@ -1,1 +1,8 @@
 \section{Introduction}
+For all $\epsilon, \delta > 0$, we say that a randomized algorithm gives an $(\epsilon, \delta)$ approximation for a value $V$ if the output $X$ of the algorithm satisfies
+\[\Pr (|X - V| > \epsilon |V|) < \delta;\]
+that is, the probability that it differs more than $\epsilon$ from the true value multiplicatively is at most $\delta$.
+
+Here we will discuss Monte Carlo methods, which are a collection of tools for obtaining such approximations through sampling and estimation. A typical Monte Carlo method runs as follows: we sample i.i.d. random variables $X_1, \ldots, X_m$ whose mean $\mu = E(X_i)$ is the quantity that we desire. If $m \geq 3 \log (2 / \delta) / (\epsilon^2 \mu)$ then by Chernoff bounds,
+\[\Pr \left( \left| \frac{1}{m} \sum_{i = 1}^m X_i - \mu \right| \geq \epsilon \mu \right) \leq \delta.\]
+Notice, however that if $\mu$ is small then $m$ must be very large--hence when constructing Monte Carlo algorithms we should try to make $\mu$ as large as possible. We illustrate with an example.
