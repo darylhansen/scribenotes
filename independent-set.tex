@@ -38,24 +38,67 @@ Our estimate of $|\Omega(G)|$ is equal to
 while the truth value is
 \[ 2^n \prod_{i=1}^m r_i \]
 
-We claim that
+\begin{claim}
 \[ \Pr\left(|\prod_{i=1}^m \frac{\tilde r_i}{r_i} - 1| \leq \epsilon\right) \geq 1 - \delta \]
+\end{claim}
 
-Proof:
+\begin{proof}
 \[Pr\left( |\tilde r_i - r_i | \leq \frac{\epsilon}{2m}r_i\right) \geq 1 - \frac{\delta}{m}\]
 \[Pr\left( r_i(1-\frac{\epsilon}{2m}) \leq \tilde r_i \leq r_i(1+\frac{\epsilon}{2m})\right) \geq 1 - \frac{\delta}{m} \]
 \[Pr\left(1 - \frac{\epsilon}{2m} \leq \frac{\tilde r_i}{r_i} \leq 1 + \frac{\epsilon}{2m}\right) \geq 1 - \frac{\delta}{m} \]
 \[Pr\left(1 - \epsilon \leq (1 - \frac{\epsilon}{2m})^m \leq \prod_{i=1}^m \frac{\tilde r_i}{r_i} \leq (1 + \frac{\epsilon}{2m})^m \leq 1 + \epsilon\right) \geq 1 - \delta \]
+\end{proof}
 
 To estimate $|\Omega(G)|$, all that remains is to figure out how to generate a uniform sample from $\Omega(G_{i-1}) \forall i$.
 Additionally, an \emph{almost} uniform sample suffices -- the extra error can be carried through the previous $\epsilon/\delta$ proof.
 
 \subsection{Sampling}
-The current goal is to sample elements from a universe $\Omega$ according to some distribution $\Pi$.
-  One cool way to do so is to design a Markov Chain whose state space is $\Omega$ that has stationary distribution $\Pi$. Then, we can simulate this Markov chain until it "mixes", and use the state at that time as a sample. Notice that in the Independent Set case, the Markov chain has $|\Omega|$ states, which is exponential in $|G|$, so we need a chain with a logarithmic mixing time (e.g. an expander graph).
+The current goal is to sample elements from a universe $\Omega$ according to some distribution $\pi$. \\
+  One cool way to do so is to design a Markov chain whose state space is $\Omega$ that has stationary distribution $\pi$. Then, we can simulate this Markov chain until it "mixes", and use the state at that time as a sample. Notice that in the Independent Set case, the Markov chain has $|\Omega|$ states, which is exponential in $|G|$, so we need a chain with a logarithmic mixing time (e.g. an expander graph).
 
 The two key questions related to this are:
 \begin{enumerate}
 \item How do we design a chain with the right distribution?
 \item How do we bound the mixing time?
 \end{enumerate}
+
+In the case of Independent Sets, construct the Markov chain as follows:\\
+  The states are the independent sets of $G$, and $X_t$ is some independent set.\\
+  To transition, choose a vertex $v$ uniformly at random from $V$:
+\begin{itemize}
+\item if $v \in X_t$ then $X_{t+1} = X_t \setminus v$
+\item if $v \notin X_t$ and $X_t \cup v$ is an independent set of $G$, then $X_{t+1} = X_t \cup v$
+\item otherwise, $X_{t+1} = X_t$
+\end{itemize}
+
+A few things to observe: First, the graph is irreducible, since to get from $I$ to $I'$, it is possible to first remove every vertex in $I$ and then to add in each vertex in $I'$. If there exists an edge, then it is aperiodic, as it is possible to stay in the same state. Finally, the chain is doubly stochastic, which implies that the stationary distribution is uniform over all independent sets.
+
+Let us now check that $P$ is doubly stochastic. First, notice that the transition from $X_t$ to $X_{t+1}$ is deterministic once we have chosen $v$. Then, notice that if we have transitioned to state $X_{t+1}$ by choosing vertex $v$, there is exactly one state $X_t$ that we could have come from: if $v \in X_{t+1}$, then it must have been added to $X_{t+1} \setminus v$. If $v \notin X_{t+1}$ and it could safely have been added, it must have just been removed from $X_{t+1} \cup v$. If it's not in $X_{t+1}$ and adding it would break the constraints, then it was a self loop from $X_{t+1}$. So if $X_{t+1} = j$, then for each of the $n$ vertices there was a $\frac{1}{n}$ contribution to some $P_{ij}$ and no contribution to any of the others. So $\sum_i P_{ij} = 1$.
+
+\bigskip
+
+Let's consider a general technique to find such a chain. Given a state space $\Omega$ and a connected graph on $\Omega$, we need to define transition probabilities so that we will have a stationary distribution matching a target $\pi$.
+
+\subsection{Metropolis Algorithm}
+As input, we take a state space $\Omega$, a connected graph $G = (\Omega, E)$, and a $\pi$ such that $\sum_{i \in \Omega} \pi_i = 1$.
+
+Let $\Delta$ be the maximum degree in the graph. \\
+$P_{xy} = \begin{cases}
+\frac{1}{2\Delta}\min(1, \frac{\pi_y}{\pi_x}) & x \neq y, y \in N(x) \\
+0 & x \neq y, y \notin N(x) \\
+1 - \sum_{y\neq x} P_{xy} & x = y
+\end{cases}$
+One nice property is that defining $P$ only depends on the ratios of $\pi$, not on $\pi_x$ or $\pi_y$ in isolation. In some circumstances, $\pi$ is only known up to proportionality, and it's not easy to get the normalizing factor, but that does not affect this algorithm.
+\begin{claim}
+$ \pi_x P_{xy} = \pi_y P_{yx} \forall x, y$
+  \end{claim}
+\begin{proof}
+If $x \neq y$, assume without loss of generality that $\pi_x \leq \pi_y$. \\
+  Then $\pi_x(\frac{1}{2\Delta}) = \pi_y(\frac{1}{2\Delta}\frac{\pi_x}{\pi_y})$.
+\end{proof} \\
+This claim implies that $\pi$ is a stationary distribution for our Markov chain.
+\bigskip
+
+As an example, suppose we wanted to sample the independent sets according to the distribution $\pi(I) = \frac{\lambda^{|I|}}{Z}$, where $Z = \sum_{I'} \lambda^{|I'|}$. \\ 
+Then by the algorithm above, the probability matrix is defined as
+\[ P_{I, I'} = \frac{1}{2n}\min(1, \lambda) \]
