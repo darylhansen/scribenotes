@@ -1,1 +1,82 @@
-\section{Coupling}
+\section{Mixing Times and Couplings}
+\subsection{Motivation}
+We have seen before that there are many important properties of Markov chains that relate to how fast a starting distribution converges to the stationary distribution, including the spectral gap and various conductance properties. Analysis of these invariants often produced upper bounds on how fast the Markov chain could mix, and vice versa. Often times, the reason why we are interested in a Markov chain is because we need a grasp on its stationary distribution, and so the technique is to simply start the Markov chain somewhere, and let it run for a while. While we know that eventually the distribution will converge to the stationary distribution, we would like some way to know concretely how many steps are needed. In particular, we hope that only polynomially many steps are needed.
+
+As an aside, apparently there are important connections to the hardcore lattice gas model in statistical physics, whatever that means.
+
+\subsection{Total Variation and Mixing Times}
+We introduce here a technique to bound the mixing time of finite, aperiodic, irreducible Markov chains. Intuitively, the mixing time of a Markov chain is how long it takes for the Markov chain to approach the unique stationary distribution.
+\begin{definition}
+Let $D_1, D_2$ be two probability distributions over some finite sample space $\Omega$. Then the total variation of $D_1$ and $D_2$ is
+\[\| D_1 - D_2 \|_{TV} = \frac{1}{2} \sum_{x \in \Omega} |D_1 (x) - D_2 (x)|.\]
+\end{definition}
+
+The total variation of two distributions is a measure of how far they differ in the worst case. This is made rigorous in the lemma below.
+
+\begin{lemma}
+For all $D_1, D_2$,
+\[\|D_1 - D_2\|_{TV} = \max_{A \subset \Omega} |D_1 (A) - D_2 (A)|.\]
+\end{lemma}
+\begin{proof}
+Let $A_1 = \{x \in \Omega: D_1 (x) \geq D_2 (x) \}$ and $A_2 = A_1^c$. Then 
+\begin{eqnarray*}
+\| D_1 - D_2 \|_{TV} &=& \frac{1}{2} (D_1 (A_1) - D_2 (A_1) + D_2 (A_2) - D_1 (A_2)) \\
+&=& \frac{1}{2} [ D_1 (A_1) - D_2 (A_1) + 1 - D_2 (A_1) - (1 - D_1(A_1))] \\
+&=& D_1 (A_1) - D_2 (A_1).
+\end{eqnarray*}
+Similarly
+\[\| D_1 - D_2 \|_{TV} = D_2 (A_2) - D_1 (A_2)\]
+so
+\[\|D_1 - D_2\|_{TV} \leq \max_{A \subset \Omega} |D_1 (A) - D_2 (A)|.\] 
+For the other direction, for any $A \subset \Omega$, if $D_1 (A) - D_2 (A) \geq 0$ notice that $D_1 (A) - D_2 (A) \leq D_1 (A_1) - D_2 (A_2)$ and otherwise $D_2 (A) - D_1 (A) \leq D_2 (A_2) - D_1 (A_2)$, so the maximum of $|D_1 (A) - D_2 (A)|$ is obtained at these two sets, so 
+\[\|D_1 - D_2\|_{TV} \geq \max_{A \subset \Omega} |D_1 (A) - D_2 (A)|\] 
+and we are done.
+\end{proof}
+
+\begin{definition}
+For any Markov chain over states $\Omega$ with stationary distribution $\pi$, and for any initial distribution $P$ and $\epsilon > 0$, the mixing time is
+\[\tau_P(\epsilon) = \min \{t: \| P^s, \pi \|_{TV} \leq \epsilon, s \geq t \}\]
+where $P^t$ is the distribution after $t$ steps of the Markov chain. 
+\end{definition}
+
+That is, the mixing time is the first time such that the actual distribution becomes $\epsilon$-close to the stationary, in the total variation sense. We say that the Markov chain is rapidly mixing if $\tau (\epsilon)$ is asymptotically polynomial in $\log |\Omega|$ and $\log (\epsilon^{-1})$.
+
+\subsection{Coupling}
+Coupling is a simple and elegant technique that sees a variety of application in probability. Here we will use it to bound mixing times.
+
+\begin{definition}
+Given a Markov chain on $\Omega$, a coupling is a Markov chain on $\Omega \times \Omega$ defining a stochastic process $(X_t, Y_t)$ so that
+\begin{enumerate}
+\item
+$X_t$ and $Y_t$ alone are faithful copies of the original Markov chain; that is, there are initial conditions $X_0'$ and $Y_0'$ on the original Markov chain defining stochastic processes $X_t'$ and $Y_t'$ so that
+\[\Pr ((X_t, Y_t) \in A \times \Omega) = \Pr (X_t' \in A)\]
+and 
+\[\Pr ((X_t, Y_t) \in \Omega \times A) = \Pr (Y_t' \in A)\]
+for all $A \subset \Omega$.
+\item
+If $X_t = Y_t$ then $X_{t + 1} = Y_{t + 1}$ pointwise.
+\end{enumerate}
+\end{definition}
+
+Intuitively, a coupling is when two walks in the Marko chain walk together, in some sense.
+
+\emph{Example}. Consider the random walk on the hypercube $\mathbb{F}_2^n$. At each step, we choose a random coordinate $i$ and a random bit $b \in \{0, 1\}$ and we change the $i$th bit to $b$. Given two starting positions $x, y$ we may construct a coupled walk; that is, consider the Markov chain over $\mathbb{F}_2^n \times \mathbb{F}_2^n$ where given two states $(a,b)$, we transition by choosing a random coordinate and a random bit as above, then altering both $a$ and $b$ in the way described above, so that the two walks transition together. If we take the starting position of this new Markov chain to be $(x, y)$ then the resulting stochastic process $(X_t, Y_T)$ is clearly a coupling: as each marginal transitions according to the original Markov chain, alone both $X_t$ and $Y_t$ must be walks along the original Markov chain, and clearly since we transition together if $X_t = Y_t$ then $X_{t + 1} = Y_{t + 1}$. We will use this coupling, along with the lemma we present next, to bound the time it takes for two random walks on the hypercube to meet.
+
+\begin{lemma}[Coupling Lemma]
+Let $Z_t = (X_t, Y_t)$ be a coupling where $Y_0 = \pi$ and $X_0 = X$, where $X$ is some arbitrary distribution. Suppose there exists a $T$ so that,
+\[\Pr (X_T \neq Y_T | X_0 = X) \leq \epsilon.\]
+Then the mixing time starting at $X$ is bounded by $T$, that is, $\tau_X (\epsilon)$.
+\end{lemma}
+\begin{proof}
+Suppose $X$ started at some arbitrary $X_0$. For all $A \subseteq \Omega$,
+\begin{eqnarray*}
+\Pr (X_T \in A) &=& \Pr (X_T = Y_T \cap Y_T \in A) + \Pr (X_t \neq Y_T \cap X_T \in A) \\
+&\geq& \Pr (X_T = Y_T \cap Y_T \in A) \\
+&=& 1 - \Pr (X_t \neq Y_T \cup Y_T \not\in A) \\
+&\geq& 1 - \Pr (Y_T \not\in A) - \Pr (X_t \neq Y_T) \geq \pi (A) - \epsilon
+\end{eqnarray*}
+where the fourth inequality follows from the law of total expectation. Similarly, $\Pr (X_t \not\in A) = \Pr (X_T \in A^c) \geq \pi (A^c) - \epsilon$ so $\Pr (X_T \in A) \leq \pi (A) + \epsilon$
+and so we are done.
+\end{proof}
+
+Examples to follow next lecture.
