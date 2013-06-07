@@ -51,7 +51,7 @@ To estimate $|\Omega(G)|$, all that remains is to figure out how to generate a u
 Additionally, an \emph{almost} uniform sample suffices -- the extra error can be carried through the previous $\epsilon/\delta$ proof.
 
 \subsection{Sampling}
-The current goal is to sample elements from a universe $\Omega$ according to some distribution $\Pi$.
+The current goal is to sample elements from a universe $\Omega$ according to some distribution $\Pi$. \\
   One cool way to do so is to design a Markov Chain whose state space is $\Omega$ that has stationary distribution $\Pi$. Then, we can simulate this Markov chain until it "mixes", and use the state at that time as a sample. Notice that in the Independent Set case, the Markov chain has $|\Omega|$ states, which is exponential in $|G|$, so we need a chain with a logarithmic mixing time (e.g. an expander graph).
 
 The two key questions related to this are:
@@ -59,3 +59,17 @@ The two key questions related to this are:
 \item How do we design a chain with the right distribution?
 \item How do we bound the mixing time?
 \end{enumerate}
+
+In the case of Independent Sets, construct the Markov Chain as follows:\\
+  The states are the independent sets of $G$, and $X_t$ is some independent set.\\
+  To transition, choose a vertex $v$ uniformly at random from $V$:
+\begin{itemize}
+\item if $v \in X_t$ then $X_{t+1} = X_t \setminus v$
+\item if $v \notin X_t$ and $X_t \cup v$ is an independent set of $G$, then $X_{t+1} = X_t \cup v$
+\item otherwise, $X_{t+1} = X_t$
+\end{itemize}
+
+A few things to observe: First, the graph is irreducible, since to get from $I$ to $I'$, it is possible to first remove every vertex in $I$ and then to add in each vertex in $I'$. If there exists an edge, then it is aperiodic, as it is possible to stay in the same state. Finally, the chain is doubly stochastic, which implies that the stationary distribution is uniform over all independent sets.
+
+Let us now check that $P$ is doubly stochastic. First, notice that the transition from $X_t$ to $X_{t+1}$ is deterministic once we have chosen $v$. Then, notice that if we have transitioned to state $X_{t+1}$ by choosing vertex $v$, there is exactly one state $X_t$ that we could have come from: if $v \in X_{t+1}$, then it must have been added to $X_{t+1} \setminus v$. If $v \notin X_{t+1}$ and it could safely have been added, it must have just been removed from $X_{t+1} \cup v$. If it's not in $X_{t+1}$ and adding it would break the constraints, then it was a self loop from $X_{t+1}$. So if $X_{t+1} = j$, then for each of the $n$ vertices there was a $\frac{1}{n}$ contribution to some $P_{ij}$ and no contribution to any of the others. So $\sum_i P_{ij} = 1$.
+  % 
